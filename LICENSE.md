@@ -1,5 +1,5 @@
-This Real-Time EEG toolbox is adapted from several existing toolboxes pursuant to their respective end user license agreements, including but not limited to [FieldTrip](http://www.fieldtriptoolbox.org/),
-[Anaconda](https://docs.continuum.io/anaconda/eula), [PsychoPy](http://www.psychopy.org/about/index.html) {Peirce, JW (2007) PsychoPy - Psychophysics software in Python. J Neurosci Methods, 162(1-2):8-13}, and [MNE](http://www.martinos.org/mne/stable/manual/appendix/c_EULA.html?highlight=license). Any use, redistribution or modification of this toolbox is permitted under the GNU General Public License (below), provided it includes license information or acknowledgement of license compliance for any and all packages included and/or referenced herein.
+This Real-Time EEG toolbox is adapted from several existing toolboxes pursuant to the terms of their respective end user license agreements (EULAs), including but not limited to [FieldTrip](http://www.fieldtriptoolbox.org/),
+[Anaconda](https://docs.continuum.io/anaconda/eula), [PsychoPy](http://www.psychopy.org/about/index.html) {Peirce, JW (2007) PsychoPy - Psychophysics software in Python. J Neurosci Methods, 162(1-2):8-13}, and [MNE](http://www.martinos.org/mne/stable/manual/appendix/c_EULA.html?highlight=license). Any use, redistribution or modification of this toolbox is permitted under the GNU General Public License (below), provided it includes EULA terms and/or explicit verification of EULA compliance for any and all packages included and/or referenced herein.
 
 
 
