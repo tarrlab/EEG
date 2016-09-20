@@ -85,10 +85,13 @@ ev_list = [100, 200, 100, 200]
 # start with right checkerboard stimuli. This is required
 # because the ev_list.append(ev_list[-1]) will not work
 # if ev_list is empty.
-trig = 100
+#trig = 100
 
 # iterating over 50 epochs
 for ii in range(10):
+    # testing: tie trigger value to trigger sent from server session
+    trig = stim_client.get_trigger(timeout=0.2)
+    
     pport.Out32(0xcff8, 0)  # set trigger pins to low
  
     if trig is not None:
@@ -99,7 +102,7 @@ for ii in range(10):
     # draw left or right checkerboard according to ev_list
  
     # pyport.setData(255) # set parport pins all high
-    pport.Out32(0xcff8, 255)    # set parport pins all high    
+    pport.Out32(0xcff8, trig)    # set parport pins to latest trigger    
     
     if ev_list[ii] == 200:
         left_cb.draw()
@@ -120,7 +123,8 @@ for ii in range(10):
     
     print "got the trigger"
     
-    pport.Out32(0xcff8, 255)
+    # testing trigger retrieval from server session
+    pport.Out32(0xcff8, trig)
  
     # wait till 0.75 sec elapses
     while timer1.getTime() < 0:
