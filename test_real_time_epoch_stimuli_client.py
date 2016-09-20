@@ -81,7 +81,7 @@ mywin.close()  # close the window
 
  
 #ev_list = list()  # list of events displayed
-ev_list = [100, 200, 100, 200]
+ev_list = []
 # start with right checkerboard stimuli. This is required
 # because the ev_list.append(ev_list[-1]) will not work
 # if ev_list is empty.
@@ -89,10 +89,12 @@ ev_list = [100, 200, 100, 200]
 
 # iterating over 50 epochs
 for ii in range(10):
+    pport.Out32(0xcff8, 0)  # set trigger pins to low
+    
     # testing: tie trigger value to trigger sent from server session
     trig = stim_client.get_trigger(timeout=0.2)
+    print "got the trigger"
     
-    pport.Out32(0xcff8, 0)  # set trigger pins to low
  
     if trig is not None:
         ev_list.append(trig)  # use the last trigger received
@@ -101,8 +103,7 @@ for ii in range(10):
  
     # draw left or right checkerboard according to ev_list
  
-    # pyport.setData(255) # set parport pins all high
-    pport.Out32(0xcff8, trig)    # set parport pins to latest trigger    
+    # pyport.setData(255) # set parport pins all high   
     
     if ev_list[ii] == 200:
         left_cb.draw()
@@ -113,18 +114,17 @@ for ii in range(10):
     # pyport.setData(0)   # set parport pins all low
  
     fixation.draw()  # draw fixation
+    pport.Out32(0xcff8, trig)    # set parport pins to latest trigger 
     mywin.flip()  # show the stimuli
  
     timer1.reset()  # reset timer
     timer1.add(0.75)  # display stimuli for 0.75 sec
  
     # return within 0.2 seconds (< 0.75 seconds) to ensure good timing
-    trig = stim_client.get_trigger(timeout=0.2)
-    
-    print "got the trigger"
+    #trig = stim_client.get_trigger(timeout=0.2)
     
     # testing trigger retrieval from server session
-    pport.Out32(0xcff8, trig)
+    #pport.Out32(0xcff8, trig)
  
     # wait till 0.75 sec elapses
     while timer1.getTime() < 0:
@@ -139,6 +139,5 @@ for ii in range(10):
     # display fixation cross for 0.25 seconds
     while timer2.getTime() < 0:
         pass
-    print "hello"
 mywin.close()  # close the window
 core.quit()
