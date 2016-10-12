@@ -16,10 +16,14 @@ for path0 in paths:
 from mne.realtime import StimClient
 from psychopy import core
 from ctypes import windll
+import time
 
 
 # create a port object to use in the session
 pport = windll.inpoutx64
+
+# try psychopy's parallel class concurrently
+# pyport = parallel.ParallelPort(0xcff8)
 
 # create a window
 mywin = visual.Window([800, 600], monitor="testMonitor", units="deg")
@@ -47,6 +51,9 @@ fixation = visual.PatchStim(mywin, color=-1, colorSpace='rgb', tex=None,
 # we use the Clock
 timer1 = core.Clock()
 timer2 = core.Clock()
+
+#setting parallel port value
+#parallel.setPortAddress(<port_address>)
   
 # Instantiating stimulation client
  
@@ -85,23 +92,33 @@ ev_list = []
 for ii in range(10):
     pport.Out32(0xcff8, 0)  # set trigger pins to low
     
+    
     # testing: tie trigger value to trigger sent from server session
     trig = stim_client.get_trigger(timeout=0.2)
-    print "got the trigger"
     
  
-    if trig is not None:
-        ev_list.append(trig)  # use the last trigger received
-    else:
-        ev_list.append(ev_list[-1])  # use the last stimuli
+    #if trig is not None:
+    #    ev_list.append(trig)  # use the last trigger received
+    #else:
+    #    ev_list.append(ev_list[-1])  # use the last stimuli
+ 
+    while trig is None:
+        trig = stim_client.get_trigger(timeout=0.2)
+      
+    ev_list.append(trig)   
+    print ev_list
  
     # draw left or right checkerboard according to ev_list
+ 
+    # pyport.setData(255) # set parport pins all high   
+    
     if ev_list[ii] == 200:
         left_cb.draw()
     else:
         right_cb.draw()
         
     pport.Out32(0xcff8, 0)  # set parport pins all low
+    # pyport.setData(0)   # set parport pins all low
  
     fixation.draw()  # draw fixation
     pport.Out32(0xcff8, trig)    # set parport pins to latest trigger 
@@ -109,6 +126,12 @@ for ii in range(10):
  
     timer1.reset()  # reset timer
     timer1.add(0.75)  # display stimuli for 0.75 sec
+ 
+    # return within 0.2 seconds (< 0.75 seconds) to ensure good timing
+    #trig = stim_client.get_trigger(timeout=0.2)
+    
+    # testing trigger retrieval from server session
+    #pport.Out32(0xcff8, trig)
  
     # wait till 0.75 sec elapses
     while timer1.getTime() < 0:
@@ -123,5 +146,7 @@ for ii in range(10):
     # display fixation cross for 0.25 seconds
     while timer2.getTime() < 0:
         pass
+    
+    time.sleep(1)
 mywin.close()  # close the window
-core.quit()
+#core.quit()
