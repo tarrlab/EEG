@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep 06 17:39:20 2016
+Most recent working modification: Thur Oct 13 2016
 
 @author: Ying Yang, yingyan1@andrew.cmu.edu
+@author: Austin Marcus, aimarcus@andrew.cmu.edu
 """
 import sys
 paths = ['C:\\ExperimentData\\YingYang\\tools\\mne-python-master\\',
