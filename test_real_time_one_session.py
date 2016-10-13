@@ -15,8 +15,8 @@ from real_time_epoch_from_fieldtrip_biosemi_buffer import biosemi_fieldtrip_rece
 import numpy as np
 import matplotlib.pyplot as plt
 import mne
-from mne.realtime import StimServer
-from mne.realtime import StimClient
+#from mne.realtime import StimServer
+#from mne.realtime import StimClient
 from mne.realtime import FieldTripClient
 import time
 
@@ -44,7 +44,140 @@ class trigger():
     def reset():
         pass
         '''
+# testing: object wrapper for entire session;
+# foregoing internal socket structure for 
+# just FieldTrip buffer client, presentation and
+# trigger sends all in one module
+# works, as of 10/13/2016!
+class session():
+    
+    def __init__(self, rt_client, pport_addr):
+        # FieldTrip buffer stuff
+        self.rt_client = rt_client
+        self.recent_epochs_obj = biosemi_fieldtrip_recent_epochs(self.rt_client, n_recent_event = 10,
+                                                        event_types = [100, 200])
+        # where to send triggers
+        self.pport_addr = pport_addr
+        self.pport = windll.inpoutx64
         
+        # timers
+        self.timer1 = core.Clock()
+        self.timer2 = core.Clock()
+        
+        # stimulus display stuff
+        self.mywin = visual.Window([800, 600], monitor="testMonitor", units="deg")  # display window
+        self.right_cb = visual.RadialStim(self.mywin, tex='sqrXsqr', color=1, size=5,
+                             visibleWedge=[0, 180], radialCycles=4,
+                             angularCycles=8, interpolate=False,
+                             autoLog=False)                                         # right checkerboard
+        self.left_cb = visual.RadialStim(self.mywin, tex='sqrXsqr', color=1, size=5,
+                            visibleWedge=[180, 360], radialCycles=4,
+                            angularCycles=8, interpolate=False,
+                            autoLog=False)                                          # left checkerboard
+        self.fixation = visual.PatchStim(self.mywin, color=-1, colorSpace='rgb', tex=None,
+                            mask='circle', size=0.2)                                # fixation
+        
+        # events
+        self.ev_list = []
+        
+    # set parport bits to trig_val
+    def send_trigger(self, trig_val):
+        self.pport.Out32(self.pport_addr, trig_val)
+        
+    # reset parport bits all to 0
+    def reset_trigger(self):
+        self.pport.Out32(self.pport_addr, 0)
+    
+    # get recent epochs from FieldTrip buffer
+    def get_recent(self):
+        return self.recent_epochs_obj.get_recent_epochs()
+        
+    def run(self):
+        # start with fixation for 0.75 sec
+        self.fixation.draw()
+        self.mywin.flip()
+        self.timer1.reset()
+        self.timer1.add(0.75)
+        
+        first_ev = 100
+        
+        self.right_cb.draw()
+        self.fixation.draw()
+        self.send_trigger(first_ev)
+        self.mywin.flip()
+        self.timer1.reset()
+        self.reset_trigger()
+        self.timer1.add(0.75)
+        
+        while self.timer1.getTime() < 0:
+            pass
+        
+        self.fixation.draw()
+        self.mywin.flip()
+        
+        time.sleep(0.5)
+        
+
+        for ii in range(0,9):
+            
+            # query the FieldTrip buffer
+            recent_epochs, recent_event_list = self.get_recent()
+            print recent_event_list
+            
+            # determine stim to display
+            if recent_event_list[-1][1] == 100.0:
+                next_ev = 200
+                self.left_cb.draw()
+            else:
+                next_ev = 100
+                self.right_cb.draw()
+            
+            # draw the stimulus, send trigger and flip window
+            self.fixation.draw()
+            self.send_trigger(next_ev)
+            self.mywin.flip()
+            self.timer1.reset()
+            self.reset_trigger()
+            self.timer1.add(0.75)
+            
+            # display stim for 0.75 sec
+            while self.timer1.getTime() < 0:
+                pass
+            
+            #clear stim from screen
+            self.fixation.draw()
+            self.mywin.flip()
+            
+            # naive "data processing" during ISI to test timing
+            sum = 0
+            for i in range(len(recent_event_list)):
+                sum += recent_event_list[i][0]
+            print sum
+            
+            # ISI - allow time for trigger to reach buffer client
+            # (total loop time ~1.1 sec)
+            time.sleep(0.8)
+        
+                
+        recent_epochs.resample(512.0)
+        recent_epochs.apply_baseline((None,0))
+        '''
+        if recent_event_list[-1][1] == 100:
+            self.left_cb.draw()
+            self.send_trigger(200)
+            self.mywin.flip()
+            self.timer1.reset()
+            self.reset_trigger()
+            self.timer1.add(0.75)
+            
+            while self.timer1.getTime() < 0:
+                pass
+        '''
+        self.mywin.close()
+        
+    
+        
+'''        
 # object wrapper for FieldTrip buffer client server session
 class server():
     
@@ -73,7 +206,7 @@ class server():
         recent_epochs, recent_event_list = self.get_recent()
         print recent_event_list
         
-        '''
+
         # check recent_event_list for trigger type to determine next stim - see if 
         # triggers are getting properly read in from FieldTrip buffer
         for ii in range(0,9):
@@ -88,7 +221,7 @@ class server():
                 
         recent_epochs.resample(512.0)
         recent_epochs.apply_baseline((None,0))
-        '''
+
         # test to avoid socket timeout error
         time.sleep(1)
         
@@ -158,7 +291,7 @@ class client():
         
         self.mywin.close()
         
-        '''
+
         # run 10 sample trials
         for ii in range(10):
             self.reset_trigger()
@@ -220,7 +353,7 @@ class client():
             
             time.sleep(1)
         self.mywin.close()  # close the window
-        '''
+
     # get trigger from server session        
     def retrieve(self, time_val):
         return self.stim_client.get_trigger(timeout=time_val)
@@ -232,13 +365,13 @@ class client():
     # reset parport bits all low
     def reset_trigger(self):
         self.pport.Out32(self.trig_addr, 0)
-     
-'''
+'''     
+
 with FieldTripClient(host='localhost', port=1972,
 		             tmax=150, wait_max=10) as rt_client:  
-    with StimServer(port=4218) as stim_server:
-        server_session = server(4218, rt_client, stim_server)
-        server_session.run()
+
+    expt_session = session(rt_client, 0xcff8)
+    expt_session.run()
 '''
 client_session = client(4218, 0xcff8)
 print "ABOUT TO RUN CLIENT MAYBE"
@@ -247,7 +380,7 @@ client_session.run()
 
 
 # debug
-'''
+
 from psychopy import visual
 import sys
 paths = ['C:\\ExperimentData\\YingYang\\tools\\mne-python-master\\']
