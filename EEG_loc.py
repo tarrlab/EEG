@@ -103,9 +103,30 @@ while cur_block <= 5:
         oneback_matrix[i] = 1
     
     #first image shown can't be a repeat, so
-    #shuffle until first index is 0
-    while oneback_matrix[0] == 1:
-        random.shuffle(oneback_matrix)
+    #shuffle until first index is 0, and 
+    #until no two one-back conditions are within 
+    #5 trials of each other
+    checked = False
+    while checked == False:
+        if oneback_matrix[0] == 1:
+            random.shuffle(oneback_matrix)
+            continue
+        tooclose = False
+        for i in range(0,196):
+            #check if one-back conditions within 5 trials
+            if oneback_matrix[i] == 1 and \
+               (oneback_matrix[i+4] == 1 or \
+               oneback_matrix[i+3] == 1 or \
+               oneback_matrix[i+2] == 1 or \
+               oneback_matrix[i+1] == 1):
+                   #reshuffle and start over
+                   random.shuffle(oneback_matrix)
+                   tooclose = True
+                   break
+        if tooclose == True:
+            continue
+        else:
+            checked = True
     
     fixation.draw()
     mywin.flip()
