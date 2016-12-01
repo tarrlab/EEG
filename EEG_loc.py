@@ -7,20 +7,32 @@ Localizer - one-back faces, objects, scenes
 500ms stim pres time, 1s ITI
 """
 
+import random
 from psychopy import visual, core, event
+import numpy
+import glob
+import cv2
 import time
 
 #create a window
-mywin = visual.Window([1000, 1000], winType="pyglet", screen="1", units="deg")
+mywin = visual.Window([1000, 1000], monitor="testMonitor", units="deg")
 
-#create some stimuli
-grating = visual.GratingStim(win=mywin, mask="circle", size=3, pos=[-4,0], sf=3)
-fixation = visual.GratingStim(win=mywin, size=0.5, pos=[0,0], sf=0, rgb=-1)
+#test image
+#test_pic = visual.ImageStim(win=mywin, pos=[0,0], image="Stimuli/Faces/AF0303_1110_CO.jpg")
 
-#draw the stimuli and update the window
-grating.draw()
-fixation.draw()
-mywin.update()
+faces = []
 
-#pause, so you get a chance to see it!
-core.wait(5.0)
+face_ims = glob.glob("~/Documents/Projects/EEG_RealTime/Faces/*jpg")
+for image in face_ims:
+    to_add = cv2.imread(image)
+    faces.append(to_add)
+
+random.shuffle(faces)
+
+for face in faces:
+    face_display = visual.ImageStim(win=mywin, image=face, pos=[0,0])
+    face_display.draw()
+    mywin.flip()
+    core.wait(0.05)
+    
+    
