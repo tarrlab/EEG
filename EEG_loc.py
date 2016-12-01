@@ -7,11 +7,9 @@ Localizer - one-back faces, objects, scenes
 500ms stim pres time, 1s ITI
 """
 
-import random
-from psychopy import visual, core, event
-import glob
-import cv2
-#import time
+import random, datetime, time, glob, cv2
+from psychopy import visual, core, event, data
+
 
 #create a window
 mywin = visual.Window([800, 800], monitor="testMonitor", units="deg")
@@ -36,6 +34,18 @@ scene_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Scen
 
 for image in scene_ims:
     scenes.append(image)
+    
+intro_text = visual.TextStim(win=mywin, "Pay attention to the center of the screen.\nPress the \
+                             space bar if an image repeats.")
+
+intro_text.draw()
+mywin.flip()
+
+#define the fixation display
+fixation = visual.ShapeStim(win=mywin, vertices=((0,-3), (0,0), (3, 0), (0, 3), (0, -3)),
+                            lineWidth=10,
+                            size=.01,
+                            closeShape=False)
 
 #program control
 num_blocks = 5
@@ -100,13 +110,21 @@ while cur_blocks <= 5:
                 scenes_shown += 1
                 
         #whichever image was chosen, display it
-        display = visual.ImageStim(win=mywin, image=to_display, ) 
+        display = visual.ImageStim(win=mywin, image=to_display, units="pix", size=250) 
+        display.draw()
+        mywin.flip()
+        core.wait(0.5)
+        fixation.draw()
+        mywin.flip()
+        core.wait(1)
         
         #if not a one-back condition, save the most recently-displayed
         #image, and increment the total per-block stim counter
         if oneback_matrix[total_shown] == 0:
             last_shown = to_display
             total_shown += 1
+    
+    wait_text = visual.TextStim(win=mywin, text="You have finished this block. Press any key to continue.")
             
 mywin.close()
 core.quit()
