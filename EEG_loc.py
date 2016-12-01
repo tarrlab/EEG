@@ -9,30 +9,54 @@ Localizer - one-back faces, objects, scenes
 
 import random
 from psychopy import visual, core, event
-import numpy
 import glob
 import cv2
 import time
 
 #create a window
-mywin = visual.Window([1000, 1000], monitor="testMonitor", units="deg")
+mywin = visual.Window([800, 800], monitor="testMonitor", units="deg")
 
-#test image
-#test_pic = visual.ImageStim(win=mywin, pos=[0,0], image="Stimuli/Faces/AF0303_1110_CO.jpg")
-
+#load faces
 faces = []
 
-face_ims = glob.glob("~/Documents/Projects/EEG_RealTime/Faces/*jpg")
+face_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Faces/*.jpg")
+
 for image in face_ims:
-    to_add = cv2.imread(image)
-    faces.append(to_add)
+    faces.append(image)
 
-random.shuffle(faces)
+#load objects
+objects = []
 
-for face in faces:
-    face_display = visual.ImageStim(win=mywin, image=face, pos=[0,0])
-    face_display.draw()
-    mywin.flip()
-    core.wait(0.05)
+object_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Objects/*.jpg")
+
+for image in object_ims:
+    objects.append(image)
     
+#load scenes
+scenes = []
+
+scene_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Scenes/*.jpg")
+
+for image in scene_ims:
+    scenes.append(image)
+
+#shuffle everything
+random.shuffle(faces)
+random.shuffle(objects)
+random.shuffle(scenes)
+
+last_shown = ""
+
+faces_shown = 0
+objects_shown = 0
+scenes_shown = 0
+total_shown = 0
+
+#core program
+while total_shown < 280:
+    
+    
+mywin.close()
+core.quit()
+
     
