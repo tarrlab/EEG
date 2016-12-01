@@ -35,11 +35,16 @@ scene_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Scen
 for image in scene_ims:
     scenes.append(image)
     
-intro_text = visual.TextStim(win=mywin, "Pay attention to the center of the screen.\nPress the \
-                             space bar if an image repeats.")
+intro_text = visual.TextStim(win=mywin, "Pay attention to the center of the screen.\n \
+                             Press the space bar if an image repeats.\n\n \
+                             Press any key to begin.")
 
 intro_text.draw()
 mywin.flip()
+
+#wait for keypress
+presses = event.waitKeys()
+    
 
 #define the fixation display
 fixation = visual.ShapeStim(win=mywin, vertices=((0,-3), (0,0), (3, 0), (0, 3), (0, -3)),
@@ -52,7 +57,7 @@ num_blocks = 5
 
 #block loop
 cur_block = 1
-while cur_blocks <= 5:
+while cur_block <= 5:
     
     #initialize helper variables for each block
     #max 90 faces, 45 objects, 45 scenes
@@ -78,6 +83,10 @@ while cur_blocks <= 5:
     #shuffle until first index is 0
     while oneback_matrix[1] == 1:
         random.shuffle(oneback_matrix)
+    
+    fixation.draw()
+    mywin.flip()
+    core.wait(5.0)
     
     #core program loop
     while total_shown < 180:
@@ -116,8 +125,13 @@ while cur_blocks <= 5:
         core.wait(0.5)
         fixation.draw()
         mywin.flip()
-        core.wait(1)
         
+        presses = event.waitKeys(1.0)
+        if(presses[0] == "space" && oneback_matrix[total_shown] == 1):
+            #correct response, handle 
+        else:
+            #incorrect response, handle
+    
         #if not a one-back condition, save the most recently-displayed
         #image, and increment the total per-block stim counter
         if oneback_matrix[total_shown] == 0:
@@ -125,6 +139,11 @@ while cur_blocks <= 5:
             total_shown += 1
     
     wait_text = visual.TextStim(win=mywin, text="You have finished this block. Press any key to continue.")
+    
+    presses = event.waitKeys()
+    if presses:
+        cur_block += 1
+        continue
             
 mywin.close()
 core.quit()
