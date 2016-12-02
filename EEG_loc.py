@@ -250,7 +250,7 @@ while cur_block <= 5:
             #correct response, handle 
             #print "Correct!"
             correct = "Y"
-        elif(((presses and presses[0] != "space") or (!presses)) and oneback_matrix[total_shown] == 1):
+        elif(((presses and presses[0] != "space") or (not presses)) and oneback_matrix[total_shown] == 1):
             #incorrect response, handle
             #print "Incorrect response"
             correct = "N"
