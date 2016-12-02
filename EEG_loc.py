@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Written on Thurs Dec 1 2016
-
 @author Austin Marcus - aimarcus@andrew.cmu.edu
 Localizer - one-back faces, objects, scenes
 500ms stim pres time, 1s ITI
@@ -24,18 +23,18 @@ dialog.addField("Handedness:")
 
 subj_info = dialog.show()
 
-while not subj_info.OK:
-    subj_info = dialog.show()
+#while not subj_info.OK:
+#    subj_info = dialog.show()
 
 subj_id = subj_info[0]
 subj_age = subj_info[1]
 subj_hand = subj_info[2]    
     
 #start data file
-datafile = open("Subject{}_EEGRealtimeLocalizer_log.txt".format(subj_id))
+datafile = open("Subject{}_EEGRealtimeLocalizer_log.txt".format(subj_id), "w+")
 datafile.write("\t\t\t\t\t\t\tEEG Realtime Localizer: Experiment log")
 datafile.write("\n")
-datafile.write("Current time and date: {}.".format(datetime.now()))
+datafile.write("Current time and date: {}\n".format(datetime.datetime.now()))
 datafile.write("Subject info:\n")
 datafile.write("ID: {}\tAge: {}\tHandedness: {}".format(subj_id, subj_age, subj_hand))
 datafile.write("\n")
@@ -48,28 +47,34 @@ datafile.write("Block\t" \
                "StimStart\t" \
                "StimDur\t" \
                "FixStart\t" \
-               "FixDur")
+               "FixDur\n")
                             
 #create a window
 mywin = visual.Window([800, 800], monitor="testMonitor", units="deg")
 
+########################
+####load in stimuli#####
+########################
+
+#update all paths as necessary
+
 #load faces
 faces = []
-face_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Faces/*.jpg")
+face_ims = glob.glob("C:/ExperimentData/YingYang/Real_time/Initial_test_script/Stimuli/Faces/*.jpg")
 
 for image in face_ims:
     faces.append(image)
 
 #load objects
 objects = []
-object_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Objects/*.jpg")
+object_ims = glob.glob("C:/ExperimentData/YingYang/Real_time/Initial_test_script/Stimuli/Objects/*.jpg")
 
 for image in object_ims:
     objects.append(image)
     
 #load scenes
 scenes = []
-scene_ims = glob.glob("/home/austin/Documents/Projects/EEG_RealTime/Stimuli/Scenes/*.jpg")
+scene_ims = glob.glob("C:/ExperimentData/YingYang/Real_time/Initial_test_script/Stimuli/Scenes/*.jpg")
 
 for image in scene_ims:
     scenes.append(image)
@@ -223,18 +228,20 @@ while cur_block <= 5:
         display = visual.ImageStim(win=mywin, image=to_display, units="pix", size=250) 
         display.draw()
         #trigger the parport
-        pport.out32(pport_addr, trig_val)
-        stim_start = time.time() - exp_start_time
+        pport.Out32(pport_addr, trig_val)
+        stim_start = time.time()
+        stim_onset = time.time() - exp_start_time
         mywin.flip()
         #reset trigger value
-        pport.out32(pport_addr, 0)
+        pport.Out32(pport_addr, 0)
         #display image for 500ms
         core.wait(0.5)
         
         #get timing information
         stim_end = time.time()
         stim_dur = stim_end - stim_start
-        fix_start = time.time() - exp_start_time
+        fix_start = time.time()
+        fix_onset = time.time() - exp_start_time
         
         #draw fixation
         fixation.draw()
@@ -280,16 +287,17 @@ while cur_block <= 5:
             mywin.flip()
             core.wait(2.0)
             
-        datafile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(cur_block, \
+        datafile.write("{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}\t{}\t{}\n".format(cur_block, \
                                                                    stims_shown, \
                                                                    stim_type, \
                                                                    oneback, \
                                                                    correct, \
                                                                    trial_rt, \
-                                                                   stim_start, \
+                                                                   stim_onset, \
                                                                    stim_dur, \
-                                                                   fix_start, \
+                                                                   fix_onset, \
                                                                    fix_dur))
+        datafile.flush()                                                          
     
     wait_text = visual.TextStim(win=mywin, text="You have finished this block. Press any key to continue.")
     
@@ -297,8 +305,8 @@ while cur_block <= 5:
     if presses:
         cur_block += 1
         continue
-            
+
+datafile.close()          
 mywin.close()
 core.quit()
 
-    
