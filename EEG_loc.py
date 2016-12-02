@@ -8,9 +8,48 @@ Localizer - one-back faces, objects, scenes
 """
 
 import random, datetime, time, glob, cv2
-from psychopy import visual, core, event, data
+from psychopy import visual, core, event, data, gui
+from ctypes import windll
 
+#set up parport for triggering
+pport = windll.inpoutx64
+pport_addr = 0xcff8
 
+#get subject info from dialog box
+dialog = gui.Dlg(title="EEG Realtime Localizer")
+dialog.addText("Subject Info")
+dialog.addField("Subject ID:")
+dialog.addField("Age:")
+dialog.addField("Handedness:")
+
+subj_info = dialog.show()
+
+while not subj_info.OK:
+    subj_info = dialog.show()
+
+subj_id = subj_info[0]
+subj_age = subj_info[1]
+subj_hand = subj_info[2]    
+    
+#start data file
+datafile = open("Subject{}_EEGRealtimeLocalizer_log.txt".format(subj_id))
+datafile.write("\t\t\t\t\t\t\tEEG Realtime Localizer: Experiment log")
+datafile.write("\n")
+datafile.write("Current time and date: {}.".format(datetime.now()))
+datafile.write("Subject info:\n")
+datafile.write("ID: {}\tAge: {}\tHandedness: {}".format(subj_id, subj_age, subj_hand))
+datafile.write("\n")
+datafile.write("Block\t" \
+               "Trial#\t" \
+               "StimType\t" \
+               "OneBack?\t" \
+               "Correct?\t" \
+               "RT\t" \
+               "StimStart\t" \
+               "StimDur\t" \
+               "FixStart\t" \
+               "FixDur")
+                            
 #create a window
 mywin = visual.Window([800, 800], monitor="testMonitor", units="deg")
 
@@ -130,6 +169,10 @@ while cur_block <= 5:
     
     fixation.draw()
     mywin.flip()
+    
+    #get start time
+    exp_start_time = time.time()
+    
     core.wait(5.0)
     
     #core program loop
@@ -138,35 +181,62 @@ while cur_block <= 5:
         #image that was displayed
         if oneback_matrix[total_shown] == 1:
             to_display = last_shown
+            #set trigger value
+            trig_val = 256
+            stim_type = "Repeat"
+            oneback = "Yes"
         else:
+            oneback = "No"
             rand = random.randint(1,3)
             if rand == 1:
                 #first, check that face count hasn't maxed out
                 if faces_shown >= 90:
                     continue
                 #show a face
+                stim_type = "Face"
                 to_display = faces[faces_shown]
                 faces_shown += 1
+                #set trigger value
+                trig_val = 32
             elif rand == 2:
                 #first, check that object count hasn't maxed out
                 if objects_shown >= 45:
                     continue
                 #show an object
+                stim_type = "Object"
                 to_display = objects[objects_shown]
                 objects_shown += 1
+                #set trigger value
+                trig_val = 64
             else:
                 #first, check that scene count hasn't maxed out
                 if scenes_shown >= 45:
                     continue
                 #show a scene
+                stim_type = "Scene"
                 to_display = scenes[scenes_shown]
                 scenes_shown += 1
+                #set trigger value
+                trig_val = 128
                 
         #whichever image was chosen, display it
         display = visual.ImageStim(win=mywin, image=to_display, units="pix", size=250) 
         display.draw()
+        #trigger the parport
+        pport.out32(pport_addr, trig_val)
+        stim_start = time.time() - exp_start_time
         mywin.flip()
+        #reset trigger value
+        pport.out32(pport_addr, 0)
+        #display image for 500ms
         core.wait(0.5)
+        
+        #get timing information
+        stim_end = time.time()
+        stim_dur = stim_end - stim_start
+        fix_start = time.time() - exp_start_time
+        
+        #draw fixation
         fixation.draw()
         mywin.flip()
         
@@ -178,11 +248,14 @@ while cur_block <= 5:
         
         if(presses and presses[0] == "space" and oneback_matrix[total_shown] == 1):
             #correct response, handle 
-            print "Correct!"
-        else:
+            #print "Correct!"
+            correct = "Y"
+        elif(((presses and presses[0] != "space") or (!presses)) and oneback_matrix[total_shown] == 1):
             #incorrect response, handle
-            print "Incorrect response"
-        
+            #print "Incorrect response"
+            correct = "N"
+        else:
+            correct = "n/a"
         #if not a one-back condition, save the most recently-displayed
         #image, and increment the total per-block distinct stim counter
         if oneback_matrix[total_shown] == 0:
@@ -194,6 +267,10 @@ while cur_block <= 5:
         #wait out the remaining time
         core.wait(1.0 - trial_rt)
         
+        #get timing information
+        end_fix = time.time()
+        fix_dur = end_fix - fix_start
+        
         #break every 25 trials
         if total_shown % 25 == 0:
             break_fix.draw()
@@ -202,6 +279,17 @@ while cur_block <= 5:
             fixation.draw()
             mywin.flip()
             core.wait(2.0)
+            
+        datafile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(cur_block, \
+                                                                   stims_shown, \
+                                                                   stim_type, \
+                                                                   oneback, \
+                                                                   correct, \
+                                                                   trial_rt, \
+                                                                   stim_start, \
+                                                                   stim_dur, \
+                                                                   fix_start, \
+                                                                   fix_dur))
     
     wait_text = visual.TextStim(win=mywin, text="You have finished this block. Press any key to continue.")
     
