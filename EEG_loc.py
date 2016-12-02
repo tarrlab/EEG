@@ -45,8 +45,8 @@ datafile.write("Block\t" \
                "Correct?\t" \
                "RT\t" \
                "StimStart\t" \
-               "StimDur\t" \
-               "FixStart\t\t" \
+               "StimDur\t\t" \
+               "FixStart\t" \
                "FixDur\n")
                             
 #create a window
