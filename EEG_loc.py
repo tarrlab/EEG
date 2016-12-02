@@ -279,7 +279,7 @@ while cur_block <= 5:
         fix_dur = end_fix - fix_start
         
         #break every 25 trials
-        if total_shown % 25 == 0:
+        if (total_shown + 1) % 25 == 0:
             break_fix.draw()
             mywin.flip()
             presses = event.waitKeys()
