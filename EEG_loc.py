@@ -184,10 +184,11 @@ while cur_block <= 5:
             print "Incorrect response"
         
         #if not a one-back condition, save the most recently-displayed
-        #image, and increment the total per-block stim counter
+        #image, and increment the total per-block distinct stim counter
         if oneback_matrix[total_shown] == 0:
             last_shown = to_display
             stims_shown += 1
+        #increment total stim counter
         total_shown += 1
             
         #wait out the remaining time
