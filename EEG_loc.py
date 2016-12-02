@@ -46,7 +46,7 @@ datafile.write("Block\t" \
                "RT\t" \
                "StimStart\t" \
                "StimDur\t" \
-               "FixStart\t" \
+               "FixStart\t\t" \
                "FixDur\n")
                             
 #create a window
@@ -288,7 +288,7 @@ while cur_block <= 5:
             core.wait(2.0)
             
         datafile.write("{}\t{}\t{}\t\t{}\t\t{}\t\t{}\t{}\t{}\t{}\t{}\n".format(cur_block, \
-                                                                   stims_shown, \
+                                                                   total_shown, \
                                                                    stim_type, \
                                                                    oneback, \
                                                                    correct, \
