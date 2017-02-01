@@ -20,4 +20,10 @@ This toolbox is licensed under the GNU GPL, and any components adapted from exis
 (uploaded 9/20/2016 by Austin Marcus)
 (recent update: 10/13/2016 by Austin Marcus)
 
-##
+## [Kevin Tan's EEGLAB Pipeline](https://github.com/kevmtan/EEGpipeline/wiki)
+
+Kevin Tan's EEGLAB pipeline performs ICA-based EEG preprocessing and source localization
+
+A detailed practical, algorithmic and theoretical overview of this pipeline can be found here: https://github.com/kevmtan/EEGpipeline/wiki
+
+Read the above wiki before using this pipeline
